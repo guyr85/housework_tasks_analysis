@@ -1,0 +1,4 @@
+date,person_id,task_id,task_duration_minutes
+2024-12-10,2,1,20
+2024-12-10,1,2,10
+2024-12-1,1,1,15
