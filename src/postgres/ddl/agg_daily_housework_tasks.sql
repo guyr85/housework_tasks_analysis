@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS public.agg_daily_housework_tasks
     -- Count the number of tasks
     number_of_tasks INTEGER,
     -- Sum the duration of the tasks
-    task_duration_minutes INTEGER,
+    task_duration_hours FLOAT,
+    create_time_utc timestamp default now() NOT NULL,
     update_time_utc timestamp default now() NOT NULL,
     CONSTRAINT "agg_daily_housework_tasks_pkey" PRIMARY KEY (date, person, task)
 )
