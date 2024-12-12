@@ -21,10 +21,20 @@ db = SQLAlchemy(app)
 
 
 def allowed_file(filename):
+    """
+    Check if the file extension is allowed (csv).
+    :param filename: Attached file name.
+    :return: true if the file extension is allowed, false otherwise.
+    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ['csv']
 
 
 def process_csv(csv_file):
+    """
+    Process the CSV file and insert valid records into the database.
+    :param csv_file: Attached CSV file.
+    :return:
+    """
     try:
         # Query the database once and create lookup dictionaries
         persons = {p.name: p.id for p in Person.query.all()}
