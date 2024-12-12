@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import SQLAlchemyError
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_wtf.csrf import CSRFProtect
@@ -25,28 +26,53 @@ def allowed_file(filename):
 
 def process_csv(csv_file):
     try:
+        # Query the database once and create lookup dictionaries
+        persons = {p.name: p.id for p in Person.query.all()}
+        tasks = {t.name: t.id for t in Task.query.all()}
+
         # Process the CSV file here
         content = csv_file.read().decode('utf-8')
         data = StringIO(content)
         # Read CSV data using pandas
         df = pd.read_csv(data)
-        # Process each row and insert into the database
-        # Since it's very low volume of data, we can process each row individually
+        # Create a list to store TaskRecord objects
+        task_records = []
         for index, row in df.iterrows():
-            task_record = TaskRecord(
+            # Look up person_id and task_id using dictionaries
+            person_id = persons.get(row['Person'])
+            task_id = tasks.get(row['Task'])
+
+            if not person_id:
+                flash(f"Person '{row['Person']}' not found in database.", 'danger')
+                continue
+
+            if not task_id:
+                flash(f"Task '{row['Task']}' not found in database.", 'danger')
+                continue
+
+            # Append the TaskRecord object to the list
+            task_records.append(TaskRecord(
                 # Ensure the CSV has all the required columns
-                date=row['date'],
-                person_id=row['person_id'],
-                task_id=row['task_id'],
-                task_duration_minutes=row['task_duration_minutes']
-            )
-            db.session.add(task_record)
+                date=row['Date'],
+                person_id=person_id,
+                task_id=task_id,
+                task_duration_minutes=row['Task Duration Minutes']
+            ))
 
-        db.session.commit()
+        # Perform bulk insert if there are valid records
+        if task_records:
+            db.session.bulk_save_objects(task_records)
+            db.session.commit()
+            flash(f'Successfully inserted {len(task_records)} task records.', 'success')
+        else:
+            flash('No valid task records to insert.', 'warning')
 
-    except Exception as e:
+    except SQLAlchemyError as e:
         db.session.rollback()
         flash(f'Error processing CSV: {str(e)}', 'danger')
+
+    except Exception as e:
+        flash(f'Unexpected error: {str(e)}', 'danger')
 
 
 # Models
