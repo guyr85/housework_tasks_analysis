@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
@@ -18,6 +19,57 @@ app.config['SECRET_KEY'] = os.urandom(24)  # Use a secure random secret key
 csrf = CSRFProtect(app)
 app.config['SESSION_TYPE'] = 'filesystem'
 db = SQLAlchemy(app)
+
+
+def truncate_postgres_tbl(tbl_name: str):
+    """
+    Truncate the table in the PostgreSQL database.
+    :param tbl_name: Table name to truncate.
+    :return:
+    """
+    try:
+        if tbl_name == 'stg_fact_housework_tasks':
+            db.session.execute(text("CALL truncate_stg_fact_housework_tasks();"))
+            db.session.commit()
+            flash(f'Successfully truncated stg_fact_housework_tasks!', 'success')
+        else:
+            flash(f'Invalid table name: {tbl_name}', 'danger')
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f'Error while truncate stg_fact_housework_tasks: {str(e)}', 'danger')
+
+
+def populate_fact_housework_tasks():
+    """
+    Populate fact_housework_tasks from stg table.
+    :param
+    :return:
+    """
+    try:
+        db.session.execute(text("CALL populate_fact_housework_tasks();"))
+        db.session.commit()
+        flash(f'Successfully populated fact_housework_tasks!', 'success')
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f'Error while populate fact_housework_tasks: {str(e)}', 'danger')
+
+
+def backfill_agg_daily_housework_tasks():
+    """
+    Backfill agg_daily_housework_tasks from fact_housework_tasks table.
+    :param
+    :return:
+    """
+    try:
+        db.session.execute(text("CALL backfill_agg_daily_housework_tasks();"))
+        db.session.commit()
+        flash(f'Successfully backfilling agg_daily_housework_tasks!', 'success')
+
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        flash(f'Error while backfilling agg_daily_housework_tasks: {str(e)}', 'danger')
 
 
 def allowed_file(filename):
@@ -103,7 +155,7 @@ class Task(db.Model):
 
 
 class TaskRecord(db.Model):
-    __tablename__ = 'fact_housework_tasks'
+    __tablename__ = 'stg_fact_housework_tasks'
     __table_args__ = {'schema': 'public'}
 
     id = db.Column(db.Integer, primary_key=True)
@@ -136,6 +188,9 @@ def add_task_record():
         action = request.form.get('action')
 
         if action == 'submit_record' and form.validate_on_submit():
+            # Call truncate_stg_fact_housework_tasks to insert records to stg table
+            truncate_postgres_tbl('stg_fact_housework_tasks')
+
             # Handle form submission for task record
             record = TaskRecord(
                 date=form.date.data,
@@ -146,9 +201,18 @@ def add_task_record():
             db.session.add(record)
             db.session.commit()
             flash('Task record added successfully!', 'success')
+
+            # Call populate_fact_housework_tasks to populate fact_housework_tasks
+            populate_fact_housework_tasks()
+            # Call backfill_agg_daily_housework_tasks to backfill agg_daily_housework_tasks
+            backfill_agg_daily_housework_tasks()
+
             return redirect(url_for('add_task_record'))
 
         elif action == 'upload_csv' and form.file.data:
+            # Call truncate_stg_fact_housework_tasks to insert records to stg table
+            truncate_postgres_tbl('stg_fact_housework_tasks')
+
             # Handle CSV file upload
             csv_file = form.file.data
             if not allowed_file(csv_file.filename):
@@ -158,11 +222,17 @@ def add_task_record():
             # Process the CSV file
             process_csv(csv_file)
             flash('CSV file processed successfully!', 'success')
+
+            # Call populate_fact_housework_tasks to populate fact_housework_tasks
+            populate_fact_housework_tasks()
+            # Call backfill_agg_daily_housework_tasks to backfill agg_daily_housework_tasks
+            backfill_agg_daily_housework_tasks()
+
             return redirect(url_for('add_task_record'))
 
         else:
             flash('Invalid action or form submission.', 'danger')
-            if form.task_duration_minutes.data <= 0:
+            if form.task_duration_minutes.data <= 0 and action == 'submit_record':
                 flash('Minutes field should be greater than 0.', 'danger')
 
     return render_template('task_record_form.html', form=form)
