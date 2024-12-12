@@ -1,7 +1,7 @@
-# Housework Task Manager
+# Housework Tasks Analysis
 
 ## Overview
-The **Housework Task Manager** is a web application built with Flask that simplifies tracking household tasks. It provides two key features:
+The **Housework Tasks Analysis** is a web application built with Flask that simplifies tracking household tasks. It provides two key features:
 
 1.  Adding individual task records through a user-friendly form.
 2.  Uploading bulk task records via a CSV file for streamlined data entry.

@@ -1,4 +1,25 @@
-date,person_id,task_id,task_duration_minutes
-2024-12-10,2,1,20
-2024-12-10,1,2,10
-2024-12-1,1,1,15
+Date,Person,Task,Task Duration Minutes
+2024-12-09,Guy,Bath The Child,10
+2024-12-09,Guy,Feed The Child,10
+2024-12-09,Guy,Take Care/Play With The Child,120
+2024-12-09,Guy,Take/Return The Kindergarten Child,10
+2024-12-09,Adi,Take/Return The Kindergarten Child,10
+2024-12-09,Adi,Take Care/Play With The Child,120
+2024-12-10,Guy,Bath The Child,10
+2024-12-10,Guy,Feed The Child,10
+2024-12-10,Guy,Take Care/Play With The Child,120
+2024-12-10,Guy,Take/Return The Kindergarten Child,10
+2024-12-10,Adi,Take/Return The Kindergarten Child,10
+2024-12-10,Adi,Take Care/Play With The Child,120
+2024-12-10,Adi,Bath The Child,10
+2024-12-10,Adi,Cooking,60
+2024-12-10,Adi,Change Of Bed Linen,10
+2024-12-10,Adi,Empty The Dishwasher,10
+2024-12-11,Guy,Feed The Child,10
+2024-12-11,Guy,Take Care/Play With The Child,60
+2024-12-11,Guy,Take/Return The Kindergarten Child,10
+2024-12-11,Guy,Clear Out The Trash,5
+2024-12-11,Guy,Folding Laundry,25
+2024-12-11,Adi,Take/Return The Kindergarten Child,10
+2024-12-31,Guy,Monthly Working Hours,11880
+2024-12-31,Adi,Monthly Working Hours,6000
