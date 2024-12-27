@@ -23,6 +23,7 @@ VALUES (1, 'Folding Laundry', 'Household'),
        (12, 'Take Care/Play With The Child', 'Child Care'),
        (13, 'Teach The Child', 'Child Care'),
        (14, 'Accompanying The Child In Treatment', 'Child Care'),
-       (15, 'Monthly Working Hours', 'Career'),
-       (16, 'Study/Seminars Hours', 'Career')
+       (15, 'Working Hours', 'Career'),
+       (16, 'Study/Seminars Hours', 'Career'),
+       (17, 'House Maintenance', 'Household')
 
